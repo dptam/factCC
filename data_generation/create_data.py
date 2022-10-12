@@ -10,6 +10,7 @@ Json objects are required to contain `id` and `text` keys.
 import argparse
 import json
 import os
+import random
 
 from tqdm import tqdm
 
@@ -50,14 +51,17 @@ def apply_transformation(data, operation):
 
 
 def main(args):
+    random.seed(args.random_seed)
     # load data
     source_docs = load_source_docs(args.data_file, to_dict=False)
     print("Loaded %d source documents." % len(source_docs))
 
     # create or load positive examples
     print("Creating data examples")
-    sclaims_op = ops.SampleSentences()
-    data = apply_transformation(source_docs, sclaims_op)
+    # sclaims_op = ops.SampleSentences()
+    # data = apply_transformation(source_docs, sclaims_op)
+    identity_op = ops.Identity()
+    data = apply_transformation(source_docs, identity_op)
     print("Created %s example pairs." % len(data))
 
     if args.save_intermediate:
@@ -156,5 +160,6 @@ if __name__ == "__main__":
     PARSER.add_argument("--augmentations", type=str, nargs="+", default=(), help="List of data augmentation applied to data.")
     PARSER.add_argument("--all_augmentations", action="store_true", help="Flag whether all augmentation should be applied.")
     PARSER.add_argument("--save_intermediate", action="store_true", help="Flag whether intermediate data from each transformation should be saved in separate files.")
+    PARSER.add_argument("--random_seed", type=int, default=42)
     ARGS = PARSER.parse_args()
     main(ARGS)

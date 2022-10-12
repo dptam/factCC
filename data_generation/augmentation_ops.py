@@ -78,6 +78,29 @@ class SampleSentences(Transformation):
         return new_example
 
 
+class Identity(Transformation):
+    # Embed document and claim as Spacy objects
+    def __init__(self, min_sent_len=8):
+        super().__init__()
+        self.min_sent_len = min_sent_len
+
+    def transform(self, example):
+        assert example["text"] is not None, "Text must be available"
+        assert example["claim"] is not None, "Claim must be available"
+
+        page_id = example["id"]
+        page_text = example["text"]
+        page_doc = self.spacy(page_text, disable=["tagger"])
+        claim = example["claim"]
+
+        new_example = make_new_example(eid=page_id, text=page_doc,
+                                       claim=self.spacy(claim),
+                                       label=LABEL_MAP[True],
+                                       extraction_span=(-1, -1),
+                                       backtranslation=False, noise=False)
+        return new_example
+
+
 class NegateSentences(Transformation):
     # Apply or remove negation from negatable tokens
     def __init__(self):
